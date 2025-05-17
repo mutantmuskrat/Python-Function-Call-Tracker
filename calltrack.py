@@ -112,16 +112,19 @@ def main():
         else:
             make_csv(sys.argv[1], sys.argv[2])
     stdscr = curses.initscr()
+    screen = curses.newpad(2000, 2000)
     curses.echo()
     Exit : bool = False
+    screen.clear()
     while not Exit:
-        stdscr.refresh()
         stdscr.addstr(0,0, "Documentation Engine")
         stdscr.addstr(2,0, "Main Menu")
         stdscr.addstr(3,0, "1. Enter Function Descriptions")
         stdscr.addstr(4,0, "2. Function Lookup")
         stdscr.addstr(10,0, "Enter Selection:___")
         stdscr.move(10,17)
+        stdscr.refresh()
+
         option = stdscr.getkey()
         if (option == "1" or option == "2"):
             Exit = True
@@ -133,34 +136,40 @@ def main():
                 csv_read = csv.reader(f)
                 for row in csv_read:
                     if len(row) < 5:
-                        stdscr.clear()
-                        stdscr.addstr(0,0, "Documentation Engine")
-                        stdscr.addstr(2,0, " ____________________________________________________")
-                        stdscr.addstr(3,0, "| Directions:                                        |")
-                        stdscr.addstr(4,0, "| Type a description of the function, then [ENTER].  |")
-                        stdscr.addstr(5,0, "| To QUIT, type ':q[ENTER]'                          |")
-                        stdscr.addstr(6,0, "| To SAVE, type ':w[ENTER]'                          |")
-                        stdscr.addstr(7,0, "| To SAVE and QUIT, type ':wq[ENTER]'                |")
-                        stdscr.addstr(8,0, " ----------------------------------------------------")
-                        stdscr.addstr(10,0, f"{row[0]}")
-                        stdscr.addstr(11,0, f"\tlocation: {row[1]}")
-                        stdscr.addstr(12,0, "\tcalled_by:")
-                        stdscr.addstr(13,0, "\t\tNone")
+                        screen.clear()
+                        screen.addstr(0,0, "Documentation Engine")
+                        screen.addstr(2,0, " ____________________________________________________")
+                        screen.addstr(3,0, "| Directions:                                        |")
+                        screen.addstr(4,0, "| Type a description of the function, then [ENTER].  |")
+                        screen.addstr(5,0, "| To QUIT, type ':q[ENTER]'                          |")
+                        screen.addstr(6,0, "| To SAVE, type ':w[ENTER]'                          |")
+                        screen.addstr(7,0, "| To SAVE and QUIT, type ':wq[ENTER]'                |")
+                        screen.addstr(8,0, " ----------------------------------------------------")
+                        screen.addstr(10,0, f"{row[0]}")
+                        screen.addstr(11,0, f"\tlocation: {row[1]}")
+                        screen.addstr(12,0, "\tcalled_by:")
+                        screen.addstr(13,0, "\t\tNone")
                         scrpos: int = 13
                         for item in ast.literal_eval(row[2]):
                             if len(item) == 2:
-                                stdscr.addstr(scrpos, 0, f"\t\t{item[0]} in {item[1]}")
+                                screen.addstr(scrpos, 0, f"\t\t{item[0]} in {item[1]}")
                             scrpos += 1
-                        stdscr.addstr(scrpos, 0, "\tcalls:")
+                        screen.addstr(scrpos, 0, "\tcalls:")
                         scrpos += 1
-                        stdscr.addstr(scrpos, 0, "\t\tNone")
+                        screen.addstr(scrpos, 0, "\t\tNone")
                         for item in ast.literal_eval(row[3]):
                             if len(item) == 2:
-                                stdscr.addstr(scrpos, 0, f"\t\t{item[0]} in {item[1]}")
+                                screen.addstr(scrpos, 0, f"\t\t{item[0]} in {item[1]}")
                             scrpos += 1
                         scrpos += 1
-                        stdscr.addstr(scrpos, 0, "\tdescription:")
-                        descriptions.append(stdscr.getstr(scrpos + 1, 16).decode(stdscr.encoding))
+                        screen.addstr(scrpos, 0, "\tdescription:")
+                        win_y, win_x = stdscr.getmaxyx()
+                        screen.refresh(0,0,0,0,win_y - 1, win_x - 1)
+                        scrpos += 1
+                        input_box = curses.newwin(50, win_x - 17, scrpos, 16)
+                        input_box.refresh()
+                        descriptions.append(input_box.getstr().decode("utf-8"))
+                        #descriptions.append(stdscr.getstr(scrpos + 1, 16).decode(stdscr.encoding))
                         if ":w" == descriptions[-1]:
                             save_descriptions(f"output_{os.path.basename(sys.argv[1])}_{sys.argv[2]}.csv", descriptions[:-1])
                         elif ":q" == descriptions[-1]:
@@ -168,44 +177,53 @@ def main():
                         elif ":wq" == descriptions[-1]:
                             save_descriptions(f"output_{os.path.basename(sys.argv[1])}_{sys.argv[2]}.csv", descriptions[:-1])
                             break
+                        win_y, win_x = stdscr.getmaxyx()
+                        screen.refresh(0,0,0,0,win_y - 1, win_x - 1)
+
         elif option == "2":
-            stdscr.clear()
-            stdscr.addstr(0,0, "Documentation Engine")
-            stdscr.addstr(2,0, "Function Lookup")
+            screen.clear()
+            screen.addstr(0,0, "Documentation Engine")
+            screen.addstr(2,0, "Function Lookup")
             scrpos: int = 5
             while not Exit:
-                stdscr.addstr(scrpos,0, "Enter Function Name: ")
+                screen.addstr(scrpos,0, "Enter Function Name: ")
                 func_name = stdscr.getstr().decode(stdscr.encoding)
                 if func_name != ":q":
                     with open(f"output_{os.path.basename(sys.argv[1])}_{sys.argv[2]}.csv", "r") as f:
                         csv_reader = csv.reader(f)
                         for line in csv_reader:
                             if line[0] == func_name:
-                                stdscr.clear()
-                                stdscr.addstr(0,0, "Documentation Engine")
-                                stdscr.addstr(2,0, "Function Lookup")
-                                stdscr.addstr(4,0, "To QUIT, type ':q[ENTER]")
-                                stdscr.addstr(6, 0, line[0])
-                                stdscr.addstr(7, 0, f"\tlocation: {line[1]}")
-                                stdscr.addstr(8, 0, "\tcalled_by:")
+                                screen.clear()
+                                screen.addstr(0,0, "Documentation Engine")
+                                screen.addstr(2,0, "Function Lookup")
+                                screen.addstr(4,0, "To QUIT, type ':q[ENTER]")
+                                screen.addstr(6, 0, line[0])
+                                screen.addstr(7, 0, f"\tlocation: {line[1]}")
+                                screen.addstr(8, 0, "\tcalled_by:")
                                 scrpos = 9
                                 for item in ast.literal_eval(line[2]):
                                     if len(item) == 2:
-                                        stdscr.addstr(scrpos, 0, f"\t\t{item[0]} in {item[1]}")
+                                        try:
+                                            screen.addstr(scrpos, 0, f"\t\t{item[0]} in {item[1]}")
+                                        except:
+                                            pass
                                     scrpos += 1
-                                stdscr.addstr(scrpos,0, "\tcalls:")
+                                screen.addstr(scrpos,0, "\tcalls:")
                                 scrpos += 1
                                 for item in ast.literal_eval(line[3]):
                                     if len(item) == 2:
-                                        stdscr.addstr(scrpos, 0, f"\t\t{item[0]} in {item[1]}")
+                                        try:
+                                            screen.addstr(scrpos, 0, f"\t\t{item[0]} in {item[1]}")
+                                        except:
+                                            pass
                                     scrpos += 1
-                                stdscr.addstr(scrpos,0, "\tdescription:")
+                                screen.addstr(scrpos,0, "\tdescription:")
                                 scrpos += 1
     
                                 if len(line) == 5:
-                                    stdscr.addstr(scrpos,0, f"\t\t{line[4]}")
+                                    screen.addstr(scrpos,0, f"\t\t{line[4]}")
                                 else:
-                                    stdscr.addstr(scrpos,0,"\t\tNone")
+                                    screen.addstr(scrpos,0,"\t\tNone")
                                 scrpos += 2
                                 break
                 else:
