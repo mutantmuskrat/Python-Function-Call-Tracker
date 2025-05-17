@@ -175,10 +175,12 @@ def main():
                         elif ":q" == descriptions[-1]:
                             break
                         elif ":wq" == descriptions[-1]:
-                            save_descriptions(f"output_{os.path.basename(sys.argv[1])}_{sys.argv[2]}.csv", descriptions[:-1])
                             break
                         win_y, win_x = stdscr.getmaxyx()
                         screen.refresh(0,0,0,0,win_y - 1, win_x - 1)
+                if descriptions[-1] != ":q":
+                    save_descriptions(f"output_{os.path.basename(sys.argv[1])}_{sys.argv[2]}.csv", descriptions[:-1])
+
 
         elif option == "2":
             screen.clear()
