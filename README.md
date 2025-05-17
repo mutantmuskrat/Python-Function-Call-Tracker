@@ -33,7 +33,7 @@ Main Menu
 Enter Selection:___
 ```
 
-If you select "1", you will see a screen like that shown below. You can enter a description of the function by typing. Then type enter to move to be presented with another function. To save your description notes to the csv file, type ```:w``` and press [ENTER]. 
+If you select "1", you will see a screen like that shown below. You can enter a description of the function by typing. Then type enter to move to the next function. To save your description notes to the csv file, type ```:w``` and press [ENTER]. 
 ```
 Documentation Engine
 
@@ -56,7 +56,7 @@ main
         description:
               User-entered description ... 
 ```
-If you select "2", you can lookup details about a function as shown below. Enter a function's name to see details.
+If you select "2", you can look up details about a function as shown below. Enter a function's name to see details.
 ```
 Documentation Engine
 
