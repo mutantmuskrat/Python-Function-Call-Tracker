@@ -187,7 +187,13 @@ def main():
             scrpos: int = 5
             while not Exit:
                 screen.addstr(scrpos,0, "Enter Function Name: ")
-                func_name = stdscr.getstr().decode(stdscr.encoding)
+                win_y, win_x = stdscr.getmaxyx()
+                screen.refresh(0,0,0,0,win_y - 1, win_x - 1)
+                
+                input_box = curses.newwin(1, win_x - 17, scrpos, 21)
+                input_box.refresh()
+                func_name = input_box.getstr().decode("utf-8")
+ 
                 if func_name != ":q":
                     with open(f"output_{os.path.basename(sys.argv[1])}_{sys.argv[2]}.csv", "r") as f:
                         csv_reader = csv.reader(f)
@@ -203,19 +209,13 @@ def main():
                                 scrpos = 9
                                 for item in ast.literal_eval(line[2]):
                                     if len(item) == 2:
-                                        try:
-                                            screen.addstr(scrpos, 0, f"\t\t{item[0]} in {item[1]}")
-                                        except:
-                                            pass
+                                        screen.addstr(scrpos, 0, f"\t\t{item[0]} in {item[1]}")
                                     scrpos += 1
                                 screen.addstr(scrpos,0, "\tcalls:")
                                 scrpos += 1
                                 for item in ast.literal_eval(line[3]):
                                     if len(item) == 2:
-                                        try:
-                                            screen.addstr(scrpos, 0, f"\t\t{item[0]} in {item[1]}")
-                                        except:
-                                            pass
+                                        screen.addstr(scrpos, 0, f"\t\t{item[0]} in {item[1]}")
                                     scrpos += 1
                                 screen.addstr(scrpos,0, "\tdescription:")
                                 scrpos += 1
@@ -226,14 +226,15 @@ def main():
                                     screen.addstr(scrpos,0,"\t\tNone")
                                 scrpos += 2
                                 break
+                
                 else:
                     Exit = True
+
         curses.echo()
         curses.endwin()
     except Exception as e:
         curses.echo()
         curses.endwin()
-        print(e, descriptions)
         
 if __name__ == "__main__":
     main()
